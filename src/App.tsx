@@ -1,26 +1,36 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import { getPrefectures } from './api'
+import { Prefecture } from './types'
+import './App.css'
 
 function App() {
+  const [prefectures, setPrefectures] = React.useState<Prefecture[]>([])
+
+  React.useEffect(() => {
+    getPrefectures().then((res) => {
+      setPrefectures(res)
+    }).catch((err) => {
+      console.log(err)
+    })
+  }, [])
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="checkbox-container">
+        {prefectures.map((prefecture) => {
+          return (
+            <div key={prefecture.prefCode}>
+              <input type="checkbox" id={`${prefecture.prefCode}`} name={prefecture.prefName} value={prefecture.prefCode} />
+              <label htmlFor={`${prefecture.prefCode}`}>{prefecture.prefName}</label>
+            </div>
+          )
+        })}
+      </div>
+      <div className="graph-container">
+
+      </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
