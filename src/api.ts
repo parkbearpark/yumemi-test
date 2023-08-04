@@ -8,3 +8,10 @@ const api = axios.create({
   },
 })
 
+export const getPrefectures = async () => {
+  if (process.env.NODE_ENV === 'test') {
+  } else {
+    const res = await api.get('/prefectures')
+    return res.data.result
+  }
+}
