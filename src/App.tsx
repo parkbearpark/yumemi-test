@@ -1,3 +1,10 @@
+// TODO: 都道府県を選択 -> 人口構成タイプを変更したときにグラフを更新する
+// 描画の部分を別に分ければ良い
+
+// TODO: デフォルトのグラフの描画
+
+// TODO: スタイリング
+
 import React from 'react'
 import 'chart.js/auto'
 import { ChartData } from 'chart.js'
