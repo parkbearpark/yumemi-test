@@ -21,7 +21,7 @@ function App() {
     })
   }, [])
 
-  const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const updatePopulationChart = (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = e.target
     const value = parseInt(target.value)
     const prefIndex = prefectures.findIndex((prefecture) => prefecture.prefCode === value)
@@ -64,7 +64,7 @@ function App() {
         {prefectures.map((prefecture) => {
           return (
             <div key={prefecture.prefCode}>
-              <input type="checkbox" id={`${prefecture.prefCode}`} name={prefecture.prefName} value={prefecture.prefCode} onChange={handleCheck} />
+              <input type="checkbox" id={`${prefecture.prefCode}`} name={prefecture.prefName} value={prefecture.prefCode} onChange={updatePopulationChart} />
               <label htmlFor={`${prefecture.prefCode}`}>{prefecture.prefName}</label>
             </div>
           )
