@@ -15,3 +15,12 @@ export const getPrefectures = async () => {
     return res.data.result
   }
 }
+
+export const getPopulation = async (prefCode: number) => {
+  if (process.env.NODE_ENV === 'test') {
+  } else {
+    const res = await api.get(`/population/composition/perYear?prefCode=${prefCode}&cityCode=-`)
+    console.log(res)
+    return res.data.result.data
+  }
+}
