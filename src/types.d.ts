@@ -8,6 +8,8 @@ export interface Population {
   value: number
 }
 
+export type RegionMapType = {[region: string]: Prefecture[]}
+
 export interface PopResult {
   label: string
   data: Population[]
