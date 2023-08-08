@@ -15,15 +15,16 @@ import { getRegion } from './helpers/region'
 import './App.scss'
 
 function App() {
-  const populationTypes = ['総人口', '年少人口', '生産年齢人口', '老年人口'] as const
-  type populationType = typeof populationTypes[number]
+  const labelTypes = ['総人口', '年少人口', '生産年齢人口', '老年人口'] as const
+  type labelType = typeof labelTypes[number]
 
   const [regions, setRegions] = React.useState<RegionMapType>({})
   const [chartData, setChartData] = React.useState<ChartData<'line', number[], string>>({
     labels: [],
     datasets: [],
   })
-  const [selectedPopType, setSelectedPopType] = React.useState<populationType>(populationTypes[0])
+  const [selectedLabel, setSelectedLabel] = React.useState<labelType>(labelTypes[0])
+  const [selectedPrefectures, setSelectedPrefectures] = React.useState<Prefecture[]>([])
 
   React.useEffect(() => {
     getPrefectures().then((res) => {
@@ -41,23 +42,19 @@ function App() {
     })
   }, [])
 
-  const updatePopulationChart = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const target = e.target
-    const prefCode = parseInt(target.getAttribute('data-code') as string)
-    const prefName = target.getAttribute('data-name') as string
+  const addPrefToChart = (prefecture: Prefecture, label: labelType) => {
+    getPopulation(prefecture.prefCode).then((res: PopResult[]) => {
+      const population: Population[] = res.filter((result) => {
+        return result.label === label
+      })[0].data
+      const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`
 
-    if (target.checked) {
-      getPopulation(prefCode).then((res: PopResult[]) => {
-        const population: Population[] = res.filter((result) => {
-          return result.label === selectedPopType
-        })[0].data
-        const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`
-
-        setChartData({
+      setChartData((prevData) => {
+        return {
           labels: population.map((population) => `${population.year}`),
-          datasets: [...chartData.datasets,
+          datasets: [...prevData.datasets,
              {
-              label: prefName,
+              label: prefecture.prefName,
               data: population.map((population) => population.value),
               type: 'line',
               borderColor: color,
@@ -65,24 +62,54 @@ function App() {
               fill: false,
             }
           ]
-        })
-      }).catch((err) => {
-        console.log(err)
+        }
       })
+    }).catch((err) => {
+      console.log(err)
+    })
+  }
+
+  const erasePrefFromChart = (prefecture: Prefecture) => {
+    const prefName = prefecture.prefName
+    setChartData({
+      labels: chartData.labels,
+      datasets: chartData.datasets.filter((dataset) => {
+        console.log(dataset.label, prefName, dataset.label !== prefName)
+        return dataset.label !== prefName
+      })
+    })
+  }
+
+  const handlePrefectures = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const target = e.target
+    const prefecture = {
+      prefCode: parseInt(target.getAttribute('data-code') as string),
+      prefName: target.getAttribute('data-name') as string
+    }
+
+    if (target.checked) {
+      setSelectedPrefectures([...selectedPrefectures, prefecture])
+      addPrefToChart(prefecture, selectedLabel)
     } else {
-      setChartData({
-        labels: chartData.labels,
-        datasets: chartData.datasets.filter((dataset) => {
-          return dataset.label !== prefName
-        })
-      })
+      setSelectedPrefectures(selectedPrefectures.filter((pref) => {
+        return pref.prefCode !== prefecture.prefCode
+      }))
+      erasePrefFromChart(prefecture)
     }
   }
 
-  const handlePopType = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLabel = (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = e.target
-    const value = target.value as populationType
-    setSelectedPopType(value)
+    const value = target.value as labelType
+
+    setSelectedLabel(value)
+    setChartData({
+      labels: [],
+      datasets: []
+    })
+    selectedPrefectures.forEach((prefecture) => {
+      addPrefToChart(prefecture, value)
+    })
   }
 
   return (
@@ -102,7 +129,7 @@ function App() {
                         name={prefecture.prefName}
                         data-code={prefecture.prefCode}
                         data-name={prefecture.prefName}
-                        onChange={updatePopulationChart}
+                        onChange={handlePrefectures}
                       />
                       <label htmlFor={prefecture.prefName}>{prefecture.prefName}</label>
                     </div>
@@ -117,11 +144,11 @@ function App() {
         {chartData !== null && <Line data={chartData} />}
 
         <div>
-          {populationTypes.map((popType) => {
+          {labelTypes.map((label) => {
             return (
-              <div key={popType}>
-                <input type="checkbox" id={`${popType}`} name={popType} value={popType} onChange={handlePopType} checked={popType === selectedPopType} />
-                <label htmlFor={`${popType}`}>{popType}</label>
+              <div key={label}>
+                <input type="radio" id={`${label}`} name={label} value={label} onChange={handleLabel} checked={selectedLabel === label} />
+                <label htmlFor={`${label}`}>{label}</label>
               </div>
             )}
           )}
