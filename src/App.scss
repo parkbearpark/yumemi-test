@@ -1,0 +1,35 @@
+.App {
+  width: 80%;
+  margin: 0 auto;
+
+  .prefectures {
+    &__container {
+      // リストのスタイルをリセットする
+      margin: 0;
+      padding: 0;
+
+      &--checkbox {
+        display: inline-block;
+        list-style: none;
+
+        // チェックボックスとラベルが垂直方向に中央揃えになるように
+        align-items: center;
+
+        input[type=checkbox] {
+          margin-right: 0.5rem;
+          vertical-align: middle; // チェックボックスが中央揃えになるように
+        }
+
+        label {
+          margin-right: 1rem;
+          vertical-align: middle; // ラベルが中央揃えになるように
+        }
+      }
+    }
+  }
+
+
+  .graph-container {
+    //
+  }
+}
