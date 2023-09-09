@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactLoading from 'react-loading'
 import 'chart.js/auto'
 import { ChartData } from 'chart.js'
 import { Line } from 'react-chartjs-2'
@@ -127,6 +128,7 @@ function App() {
 
   return (
     <div className="App">
+      { Object.keys(regions).length === 0 && <ReactLoading className='loading' type="spin" color="#000" />}
       <div className="prefectures">
         <ul className="prefectures__container">
           {Object.keys(regions).map((regionName) => {

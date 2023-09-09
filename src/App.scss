@@ -1,6 +1,13 @@
 .App {
   width: 80%;
   margin: 0 auto;
+  position: relative;
+
+  .loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+  }
 
   .prefectures {
     &__container {
