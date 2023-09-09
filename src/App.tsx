@@ -1,10 +1,3 @@
-// TODO: 都道府県を選択 -> 人口構成タイプを変更したときにグラフを更新する
-// 描画の部分を別に分ければ良い
-
-// TODO: デフォルトのグラフの描画
-
-// TODO: スタイリング
-
 import React from 'react'
 import 'chart.js/auto'
 import { ChartData } from 'chart.js'
@@ -17,6 +10,8 @@ import './App.scss'
 function App() {
   const labelTypes = ['総人口', '年少人口', '生産年齢人口', '老年人口'] as const
   type labelType = typeof labelTypes[number]
+
+  const wholeData = React.useMemo(() => {return {} as {[prefCode: number]: {[label: string]: Population[] } } }, [])
 
   const [regions, setRegions] = React.useState<RegionMapType>({})
   const [chartData, setChartData] = React.useState<ChartData<'line', number[], string>>({
@@ -37,40 +32,67 @@ function App() {
           }
         })
       })
+      return res
     }).catch((err) => {
       console.log(err)
     })
   }, [])
 
-  const addPrefToChart = (prefecture: Prefecture, label: labelType) => {
-    getPopulation(prefecture.prefCode).then((res: PopResult[]) => {
-      const population: Population[] = res.filter((result) => {
-        return result.label === label
-      })[0].data
-      const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`
+  React.useEffect(() => {
+    Object.keys(regions).forEach((region) => {
+      const prefectures = regions[region]
+      prefectures.forEach((prefecture) => {
+        getPopulation(prefecture.prefCode).then((res: PopResult[]) => {
+          wholeData[prefecture.prefCode] = {}
+          res.forEach((result) => {
+            wholeData[prefecture.prefCode][result.label] = result.data
+          })
+        }).catch((err) => {
+          console.log(err)
+        })
+      }
+    )})
+  }, [regions, wholeData])
 
+  React.useEffect(() => {
+    if (selectedPrefectures.length === 0) return
+
+    setChartData({
+      labels: [],
+      datasets: []
+    })
+
+    const prefectures = selectedPrefectures
+    prefectures.forEach((prefecture, index) => {
+      const population = wholeData[prefecture.prefCode][selectedLabel]
+      const color = `#${(Math.floor(index) * 360).toString(16)}`
       setChartData((prevData) => {
         return {
-          labels: population.map((population) => `${population.year}`),
           datasets: [...prevData.datasets,
-             {
+            {
               label: prefecture.prefName,
               data: population.map((population) => population.value),
               type: 'line',
               borderColor: color,
               backgroundColor: color,
               fill: false,
-            }
-          ]
+            },
+          ],
+          labels: population.map((population) => String(population.year)),
         }
       })
-    }).catch((err) => {
-      console.log(err)
     })
-  }
+  }, [selectedPrefectures, selectedLabel, wholeData])
 
-  const erasePrefFromChart = (prefecture: Prefecture) => {
-    const prefName = prefecture.prefName
+  React.useEffect(() => {
+    const prefData = chartData.datasets.filter((dataset) => {
+      return selectedPrefectures.findIndex((pref) => {
+        return pref.prefName === dataset.label
+      }) === -1
+    })[0]
+    if (prefData === undefined) return
+
+    const prefName = prefData.label
     setChartData({
       labels: chartData.labels,
       datasets: chartData.datasets.filter((dataset) => {
@@ -78,7 +100,7 @@ function App() {
         return dataset.label !== prefName
       })
     })
-  }
+  }, [selectedPrefectures, chartData])
 
   const handlePrefectures = (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = e.target
@@ -89,12 +111,10 @@ function App() {
 
     if (target.checked) {
       setSelectedPrefectures([...selectedPrefectures, prefecture])
-      addPrefToChart(prefecture, selectedLabel)
     } else {
       setSelectedPrefectures(selectedPrefectures.filter((pref) => {
         return pref.prefCode !== prefecture.prefCode
       }))
-      erasePrefFromChart(prefecture)
     }
   }
 
@@ -103,13 +123,6 @@ function App() {
     const value = target.value as labelType
 
     setSelectedLabel(value)
-    setChartData({
-      labels: [],
-      datasets: []
-    })
-    selectedPrefectures.forEach((prefecture) => {
-      addPrefToChart(prefecture, value)
-    })
   }
 
   return (
