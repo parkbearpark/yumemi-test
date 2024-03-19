@@ -19,8 +19,9 @@ export const getPrefectures = async () => {
 export const getPopulation = async (prefCode: number) => {
   if (process.env.NODE_ENV === 'test') {
   } else {
-    const res = await api.get(`/population/composition/perYear?prefCode=${prefCode}&cityCode=-`)
-    console.log(res)
+    const res = await api.get(
+      `/population/composition/perYear?prefCode=${prefCode}&cityCode=-`
+    )
     return res.data.result.data
   }
 }

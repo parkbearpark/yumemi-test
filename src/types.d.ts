@@ -6,7 +6,7 @@ export interface Prefecture {
 }
 
 export interface Population {
-  year: number
+  year: string
   value: number
 }
 
