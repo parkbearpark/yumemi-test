@@ -1,22 +1,25 @@
-import { useState } from 'react'
-import { useRegions } from '../hooks/useRegions'
-import { Prefecture } from '../types'
+import { RegionMapType, labelType, Prefecture } from '../types'
 
-const Selecter = () => {
-  const labelTypes = ['総人口', '年少人口', '生産年齢人口', '老年人口'] as const
-  type labelType = (typeof labelTypes)[number]
+interface SelecterInterface {
+  regions: RegionMapType
+  labels: readonly labelType[]
+  selectedLabel: labelType
+  onPrefectureSelected: (pref: Prefecture) => void
+  onLabelSelected: (label: labelType) => void
+}
 
-  const { regions } = useRegions()
-  const [selectedLabel, setSelectedLabel] = useState<labelType>(labelTypes[0])
-  const [selectedPrefectures, setSelectedPrefectures] = useState<Prefecture[]>(
-    []
-  )
-
+const Selecter = ({
+  regions,
+  labels,
+  selectedLabel,
+  onPrefectureSelected,
+  onLabelSelected,
+}: SelecterInterface) => {
   const handleLabel = (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = e.target
-    const value = target.value as labelType
+    const label = target.value as labelType
 
-    setSelectedLabel(value)
+    onLabelSelected(label)
   }
 
   const handlePrefectures = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,15 +29,7 @@ const Selecter = () => {
       prefName: target.getAttribute('data-name') as string,
     }
 
-    if (target.checked) {
-      setSelectedPrefectures([...selectedPrefectures, prefecture])
-    } else {
-      setSelectedPrefectures(
-        selectedPrefectures.filter((pref) => {
-          return pref.prefCode !== prefecture.prefCode
-        })
-      )
-    }
+    onPrefectureSelected(prefecture)
   }
 
   return (
@@ -66,7 +61,7 @@ const Selecter = () => {
         })}
       </ul>
       <div>
-        {labelTypes.map((label) => {
+        {labels.map((label) => {
           return (
             <div key={label}>
               <input

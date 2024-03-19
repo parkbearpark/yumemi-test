@@ -5,13 +5,12 @@ import { getRegion } from '../helpers/region'
 
 export const useRegions = () => {
   const [regions, setRegions] = useState<RegionMapType>({})
-  // const [prefectures, setPrefectures] = useState<Prefecture[]>([])
 
   const fetchPrefecturesAsync = async () => {
     const prefs = await getPrefectures()
 
     const regs = prefs.reduce(
-      (prefecture: Prefecture, currentRegions: RegionMapType) => {
+      (currentRegions: RegionMapType, prefecture: Prefecture) => {
         const regionName = getRegion(prefecture.prefName)
         return {
           ...currentRegions,
@@ -21,7 +20,6 @@ export const useRegions = () => {
       {}
     )
 
-    // setPrefectures(prefs)
     setRegions(regs)
   }
 

@@ -1,3 +1,5 @@
+import { labels } from './helpers/labels'
+
 export interface Prefecture {
   prefCode: number
   prefName: string
@@ -8,9 +10,11 @@ export interface Population {
   value: number
 }
 
-export type RegionMapType = {[region: string]: Prefecture[]}
+export type RegionMapType = { [region: string]: Prefecture[] }
 
 export interface PopResult {
   label: string
   data: Population[]
 }
+
+export type labelType = (typeof labels)[number]
